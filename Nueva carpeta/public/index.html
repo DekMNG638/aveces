@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Hold'em Poker Online</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0a5c36;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .table {
+            background-color: #0d8a52;
+            border-radius: 200px;
+            padding: 40px;
+            position: relative;
+            height: 400px;
+            border: 15px solid #6b4226;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .community-cards {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: black;
+            position: relative;
+        }
+        .red {
+            color: red;
+        }
+        .player-area {
+            position: absolute;
+            width: 150px;
+            text-align: center;
+        }
+        .player-cards {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .player-card {
+            width: 60px;
+            height: 90px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            color: black;
+        }
+        .card-back {
+            background-color: #1a6aff;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #1e52cc 10px, #1e52cc 20px);
+        }
+        .pot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+        .chips {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+            justify-content: center;
+        }
+        .chip {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px dashed white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .login-screen {
+            background-color: rgba(0, 0, 0, 0.8);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .login-form {
+            background-color: #0d8a52;
+            padding: 30px;
+            border-radius: 10px;
+            border: 5px solid #6b4226;
+            width: 300px;
+        }
+        .login-form h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #f0c14b;
+            color: #111;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #ddb347;
+        }
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .player-stats {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .winner-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 50;
+            display: none;
+        }
+        .winner-announcement h2 {
+            color: gold;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Texas Hold'em Poker Online</h1>
+        
+        <div id="table-view" style="display: none;">
+            <div class="table">
+                <div class="community-cards" id="community-cards">
+                    <!-- Community cards will be added here -->
+                </div>
+                
+                <div class="pot" id="pot">
+                    Pot: $0
+                </div>
+                
+                <div id="players-container">
+                    <!-- Player areas will be added here -->
+                </div>
+            </div>
+            
+            <div class="winner-announcement" id="winner-announcement">
+                <h2>¡Ganador!</h2>
+                <p id="winner-name"></p>
+                <p id="winner-hand"></p>
+                <button onclick="startNewRound()">Nueva Ronda</button>
+            </div>
+        </div>
+        
+        <div id="player-view" style="display: none;">
+            <h2>Tu Mano</h2>
+            <div class="player-cards" id="my-cards">
+                <!-- Player's cards will be added here -->
+            </div>
+            
+            <div class="player-stats">
+                <p>Fichas: <span id="my-chips">1000</span></p>
+                <p>Apuesta actual: <span id="current-bet">0</span></p>
+            </div>
+            
+            <div class="player-controls" id="player-controls">
+                <button id="btn-fold">Fold</button>
+                <button id="btn-check">Check</button>
+                <button id="btn-call">Call</button>
+                <button id="btn-raise">Raise</button>
+                <input type="number" id="raise-amount" min="0" step="10" value="0">
+            </div>
+        </div>
+        
+        <div class="login-screen" id="login-screen">
+            <div class="login-form">
+                <h2>Unirse al Juego</h2>
+                <div class="form-group">
+                    <label for="player-name">Nombre:</label>
+                    <input type="text" id="player-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="game-type">Tipo de dispositivo:</label>
+                    <select id="game-type">
+                        <option value="table">Mesa</option>
+                        <option value="player">Jugador</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="game-id">ID de la partida:</label>
+                    <input type="text" id="game-id" placeholder="Nuevo juego o ID existente">
+                </div>
+                <button id="btn-join">Unirse</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the Netlify Functions script -->
+    <script src="/.netlify/functions/pokerGame"></script>
+    
+    <script>
+        // Load the socket.io client script
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js';
+        document.head.appendChild(script);
+        
+        // Wait for the socket.io script to load
+        script.onload = function() {
+            // Initialize the game
+            const socket = io();
+            
+            // Game variables
+            let gameId = '';
+            let playerName = '';
+            let isTableView = false;
+            let playerId = '';
+            let gameState = {
+                players: [],
+                communityCards: [],
+                pot: 0,
+                currentTurn: '',
+                currentBet: 0
+            };
+            
+            // Card deck
+            const suits = ['♥', '♦', '♣', '♠'];
+            const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            
+            // DOM elements
+            const loginScreen = document.getElementById('login-screen');
+            const tableView = document.getElementById('table-view');
+            const playerView = document.getElementById('player-view');
+            const btnJoin = document.getElementById('btn-join');
+            const communityCardsContainer = document.getElementById('community-cards');
+            const potDisplay = document.getElementById('pot');
+            const playersContainer = document.getElementById('players-container');
+            const myCards = document.getElementById('my-cards');
+            const myChips = document.getElementById('my-chips');
+            const currentBetDisplay = document.getElementById('current-bet');
+            const playerControls = document.getElementById('player-controls');
+            const btnFold = document.getElementById('btn-fold');
+            const btnCheck = document.getElementById('btn-check');
+            const btnCall = document.getElementById('btn-call');
+            const btnRaise = document.getElementById('btn-raise');
+            const raiseAmount = document.getElementById('raise-amount');
+            const winnerAnnouncement = document.getElementById('winner-announcement');
+            const winnerName = document.getElementById('winner-name');
+            const winnerHand = document.getElementById('winner-hand');
+            
+            // Join game
+            btnJoin.addEventListener('click', function() {
+                playerName = document.getElementById('player-name').value.trim();
+                gameId = document.getElementById('game-id').value.trim() || generateGameId();
+                isTableView = document.getElementById('game-type').value === 'table';
+                
+                if (!playerName) {
+                    alert('Por favor, introduce un nombre de jugador');
+                    return;
+                }
+                
+                // Hide login screen
+                loginScreen.style.display = 'none';
+                
+                // Show the appropriate view
+                if (isTableView) {
+                    tableView.style.display = 'block';
+                    socket.emit('joinAsTable', { gameId, playerName });
+                } else {
+                    playerView.style.display = 'block';
+                    socket.emit('joinAsPlayer', { gameId, playerName });
+                }
+            });
+            
+            // Socket events
+            socket.on('connect', function() {
+                console.log('Connected to server');
+            });
+            
+            socket.on('joined', function(data) {
+                playerId = data.playerId;
+                console.log('Joined game as', playerId);
+                updateGameState(data.gameState);
+            });
+            
+            socket.on('gameState', function(data) {
+                updateGameState(data);
+            });
+            
+            socket.on('playerTurn', function(data) {
+                if (data.playerId === playerId) {
+                    enablePlayerControls(data.options);
+                }
+            });
+            
+            socket.on('roundEnd', function(data) {
+                if (isTableView) {
+                    showWinner(data.winner, data.handDescription);
+                }
+            });
+            
+            // Player actions
+            btnFold.addEventListener('click', function() {
+                socket.emit('playerAction', { gameId, playerId, action: 'fold' });
+                disablePlayerControls();
+            });
+            
+            btnCheck.addEventListener('click', function() {
+                socket.emit('playerAction', { gameId, playerId, action: 'check' });
+                disablePlayerControls();
+            });
+            
+            btnCall.addEventListener('click', function() {
+                socket.emit('playerAction', { gameId, playerId, action: 'call' });
+                disablePlayerControls();
+            });
+            
+            btnRaise.addEventListener('click', function() {
+                const amount = parseInt(raiseAmount.value);
+                socket.emit('playerAction', { gameId, playerId, action: 'raise', amount });
+                disablePlayerControls();
+            });
+            
+            // Helper functions
+            function updateGameState(state) {
+                gameState = state;
+                
+                // Update UI based on the game state
+                if (isTableView) {
+                    updateTableView();
+                } else {
+                    updatePlayerView();
+                }
+            }
+            
+            function updateTableView() {
+                // Update community cards
+                communityCardsContainer.innerHTML = '';
+                gameState.communityCards.forEach(card => {
+                    const cardElement = createCardElement(card);
+                    communityCardsContainer.appendChild(cardElement);
+                });
+                
+                // Update pot
+                potDisplay.textContent = `Pot: $${gameState.pot}`;
+                
+                // Update players
+                playersContainer.innerHTML = '';
+                gameState.players.forEach((player, index) => {
+                    const playerElement = document.createElement('div');
+                    playerElement.className = 'player-area';
+                    
+                    // Position players in a circle around the table
+                    const angle = (index * (360 / gameState.players.length)) * (Math.PI / 180);
+                    const radius = 200;
+                    const x = Math.cos(angle) * radius + 200;
+                    const y = Math.sin(angle) * radius + 200;
+                    
+                    playerElement.style.left = `${x}px`;
+                    playerElement.style.top = `${y}px`;
+                    
+                    playerElement.innerHTML = `
+                        <div>${player.name}</div>
+                        <div>Fichas: ${player.chips}</div>
+                        <div>Apuesta: ${player.bet}</div>
+                        <div class="player-cards">
+                            <div class="player-card card-back"></div>
+                            <div class="player-card card-back"></div>
+                        </div>
+                    `;
+                    
+                    playersContainer.appendChild(playerElement);
+                });
+            }
+            
+            function updatePlayerView() {
+                const player = gameState.players.find(p => p.id === playerId);
+                
+                if (!player) return;
+                
+                // Update player's cards
+                myCards.innerHTML = '';
+                player.cards.forEach(card => {
+                    const cardElement = createCardElement(card);
+                    myCards.appendChild(cardElement);
+                });
+                
+                // Update chips and bet
+                myChips.textContent = player.chips;
+                currentBetDisplay.textContent = player.bet;
+                
+                // Update controls based on turn
+                if (gameState.currentTurn === playerId) {
+                    const options = calculateOptions(player);
+                    enablePlayerControls(options);
+                } else {
+                    disablePlayerControls();
+                }
+            }
+            
+            function createCardElement(card) {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                
+                const isRed = card.suit === '♥' || card.suit === '♦';
+                if (isRed) {
+                    cardElement.classList.add('red');
+                }
+                
+                cardElement.textContent = `${card.rank}${card.suit}`;
+                
+                return cardElement;
+            }
+            
+            function calculateOptions(player) {
+                const options = {
+                    canFold: true,
+                    canCheck: gameState.currentBet <= player.bet,
+                    canCall: gameState.currentBet > player.bet,
+                    canRaise: player.chips > gameState.currentBet
+                };
+                
+                return options;
+            }
+            
+            function enablePlayerControls(options) {
+                playerControls.style.display = 'flex';
+                
+                btnFold.disabled = !options.canFold;
+                btnCheck.disabled = !options.canCheck;
+                btnCall.disabled = !options.canCall;
+                btnRaise.disabled = !options.canRaise;
+                
+                if (options.canRaise) {
+                    raiseAmount.min = gameState.currentBet * 2;
+                    raiseAmount.max = player.chips;
+                    raiseAmount.value = gameState.currentBet * 2;
+                }
+            }
+            
+            function disablePlayerControls() {
+                btnFold.disabled = true;
+                btnCheck.disabled = true;
+                btnCall.disabled = true;
+                btnRaise.disabled = true;
+            }
+            
+            function showWinner(winner, handDescription) {
+                winnerName.textContent = `${winner.name} gana $${gameState.pot}`;
+                winnerHand.textContent = handDescription;
+                winnerAnnouncement.style.display = 'block';
+                
+                setTimeout(() => {
+                    winnerAnnouncement.style.display = 'none';
+                }, 5000);
+            }
+            
+            function startNewRound() {
+                socket.emit('startNewRound', { gameId });
+                winnerAnnouncement.style.display = 'none';
+            }
+            
+            function generateGameId() {
+                return Math.random().toString(36).substring(2, 10);
+            }
+        };
+    </script>
+</body>
+</html>

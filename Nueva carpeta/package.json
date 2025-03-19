@@ -1,0 +1,16 @@
+{
+    "name": "texas-holdem-poker",
+    "version": "1.0.0",
+    "description": "Juego de Póker Texas Hold'em multijugador",
+    "main": "index.html",
+    "scripts": {
+      "start": "netlify dev"
+    },
+    "dependencies": {
+      "socket.io": "^4.4.1",
+      "http": "^0.0.1-security"
+    },
+    "devDependencies": {
+      "netlify-cli": "^12.0.0"
+    }
+  }
